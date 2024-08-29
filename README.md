@@ -146,6 +146,3 @@ The API endpoints are organized into the following directories:
 
 - Refer to `Project_doc.pdf` for detailed project documentation.
 - The `api_yaml_file.yaml` likely contains API specifications or documentation.
-
-This enhanced README provides a more comprehensive overview of the project, including its features, technologies, structure, database schema, API endpoints, and instructions for running the application.
---- END OF FILE README.md ---
