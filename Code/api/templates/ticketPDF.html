@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      #center {
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 50px;
+      }
+      #center-1 {
+        text-align: center;
+      }
+      #user-style {
+        text-transform: uppercase;
+        font-size: 30px;
+      }
+      .ticket-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background-color: #ddf59c;
+
+        padding: 20px;
+      }
+      .details-container {
+        display: flex;
+        justify-content: space-between;
+      }
+      .img-1 {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .line-1 {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ticket-container">
+      <div>
+        <h1 id="center">Ticket Details</h1>
+        <div class="details-container">
+          <div class="user-details">
+            <h1 id="user-style">User Details</h1>
+            <h2>Name : {{first_name}} {{last_name}}</h2>
+            <h2>Email : {{user_email}}</h2>
+            
+          </div>
+          <div
+            style="background-color: #ff7300; height: 10px; width: 100%"
+          ></div>
+          <div class="venue-details">
+            <h1>VENUE DETAILS</h1>
+            <h3>Venue Name: {{ venue_name }}</h3>
+            <h3>Venue City: {{ venue_city }}</h3>
+            <h3>Venue Address: {{ venue_address }}</h3>
+          </div>
+        </div>
+      </div>
+      <div style="background-color: #ff7300; height: 10px; width: 100%"></div>
+      <div class="details-container">
+        <div class="user-details">
+          <h1>SHOW DETAILS</h1>
+          <h3>Show Name: {{ show_name }}</h3>
+          <h3>Show Date: {{ show_date }}</h3>
+          <h3>Duration: {{ duration }} (HH:MM)</h3>
+          <h3>Tag: {{ tag }}</h3>
+          <h3>Seats Booked: {{ seats }}</h3>
+        </div>
+      </div>
+      <div style="background-color: #ff7300; height: 10px; width: 100%"></div>
+      <h1>PAYMENT DETAILS</h1>
+      <h3>Total Cost: Rs.{{price}}</h3>
+      <div
+        class="line-1"
+        style="background-color: #423020; height: 5px; width: 70%"
+      ></div>
+      <p id="center-1">Thank you for your booking!</p>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Monthly Engagement Report</title>
+    <style>
+      table,
+      th,
+      td {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+      #centre-heading {
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 50px;
+      }
+      #centre-table {
+        font-size: 23px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+      }
+      #centre {
+        text-align: center;
+        text-transform: uppercase;
+      }
+      #page {
+        margin-top: 100px;
+        margin-bottom: 100px;
+        margin-right: 100px;
+        margin-left: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="page">
+      <h1 id="centre-heading">Monthly Engagement Report</h1>
+      <p>Dear {{ user.first_name }},</p>
+      <p>Here is your monthly engagement report:</p>
+      <h2 id="centre">User Details</h2>
+      <div>
+        <div>
+          <p><strong>First Name:</strong> {{ user.first_name }}</p>
+          <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+          <p><strong>Email:</strong> {{ user.email }}</p>
+        </div>
+      </div>
+      {%if bookings|length != 0 %}
+
+      <h2 id="centre">Booking Details</h2>
+      <table id="centre-table">
+        <thead>
+          <tr>
+            <th>Show Name</th>
+            <th>Tag</th>
+            <th>Booking date</th>
+            <th>Show Date</th>
+            <th>Duration</th>
+            <th>Price</th>
+            <th>Seats booked</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in bookings %}
+          <tr>
+            <td>{{ booking.show_name }}</td>
+            <td>{{ booking.tag }}</td>
+            <td>{{ booking.booked_date }}</td>
+            <td>{{ booking.show_date }}</td>
+            <td>{{ booking.duration }}</td>
+            <td>{{ booking.price }}</td>
+            <td>{{ booking.seats }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      <p>
+        Thank you for your engagement with us. If you have any questions or
+        concerns, feel free to contact us at abhishek@gmail.com.
+      </p>
+      <p>Best regards,</p>
+      <p>Support Team</p>
+      <small>Abhishek</small>
+      <p><small>abhishek@gmail.com</small></p>
+    </div>
+  </body>
+</html>

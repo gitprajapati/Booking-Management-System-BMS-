@@ -1,0 +1,1034 @@
+openapi: 3.0.0
+info:
+  title: BMS
+  description: >
+    <div>This is a modern multi-user application that allows users to book show tickets, while the admin can manage theatres and shows.</div>
+    <p>First register an admin account then login to create venue and shows for user to book tickets.</p>
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:5000/
+  
+tags:
+  - name: Auth
+    description: Registration and token-based authorization.
+  - name: Venue
+    description: Venue (theatre) management by admin.
+  - name: Show
+    description: Show management by admin.
+  - name: Files
+    description: Download CSV files.
+  - name: Booking
+    description: User ticket booking for available shows.
+  - name: PDF
+    description: Download PDF files.
+  - name: Search
+    description: Search functionalities for shows and venues.
+# -----------------------Registration--------------------------------
+paths:
+  /api/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      description: Register a new user in mention format and put userTypr 1 for admin and 2 for user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: Rajveer
+                email:
+                  type: string
+                  example: user1@gmail.com
+                password:
+                  type: string
+                  example: 12345
+                first_name:
+                  type: string
+                  example: Raj
+                last_name:
+                  type: string
+                  example: Veer
+                userType:
+                  type: integer
+                  example: 2
+      responses:
+        "200":
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: Registration successful
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Email already registered
+        "500":
+          description: Internal Server Error
+
+  #-------------------------Login-----------------------------
+
+  /api/login:
+    post:
+      tags:
+          - Auth
+      summary: User login
+      description: Log in a user with provided email and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user1@gmail.com
+                password:
+                  type: string
+                  example: 12345
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: "JWT_ACCESS_TOKEN"
+                  status:
+                    type: boolean
+                    example: true
+        "401":
+          description: Invalid credentials or request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Incorrect password, please try again."
+        "422":
+          description: Invalid credentials or request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Incorrect password, please try again."
+        "500":
+          description: Internal Server Error
+
+  #--------------------------- Venue create -------------------------
+
+  /api/venues:
+    post:
+      tags:
+        - Venue
+      summary: Create a new venue
+      description: Create a new venue in given format.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Venue Name 1
+                address:
+                  type: string
+                  example: Venue Address 1
+                city:
+                  type: string
+                  example: Venue City 1
+                state:
+                  type: string
+                  example: Venue State 1
+      security:
+        - jwt_auth: []
+      responses:
+        "200":
+          description: Venue created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Venue created successfully
+
+        "500":
+          description: Internal Server Error
+        "401":
+          description: Missing Authorization Header
+        "422":
+          description: Signature verification failed
+
+  #-------------------------Edit venue by venue ID---------------
+
+  /api/venues/{id}:
+    put:
+      tags:
+        - Venue
+      summary: Update a venue
+      description: Update a venue with new data and venue ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Updated Venue Name 1
+                address:
+                  type: string
+                  example: Updated Venue Address 1
+                city:
+                  type: string
+                  example: Updated Venue City 1
+                state:
+                  type: string
+                  example: Updated Venue State 1
+      security:
+        - jwt_auth: []
+        - admin_auth: []
+      responses:
+        "200":
+          description: Venue edited successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Venue edited successfully
+                  success:
+                    type: boolean
+                    example: true
+        "404":
+          description: Venue not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Venue not found."
+        "401":
+          description: Missing Authorization Header
+
+        "422":
+          description: Signature verification failed
+        "403":
+          description: Unauthorized access.
+        "500":
+          description: Internal Server Error
+
+    #-------------------Delete venue by venue ID----------------------
+
+    delete:
+      tags:
+        - Venue
+      summary: Delete a venue
+      description: Delete a venue by venue ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      security:
+        - jwt_auth: []
+        - admin_auth: []
+      responses:
+        "200":
+          description: Venue deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Venue deleted successfully.
+        "404":
+          description: Venue not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Venue does not exist.
+        "401":
+          description: Missing Authorization Header
+
+        "422":
+          description: Signature verification failed
+        "403":
+          description: Unauthorized access
+        "500":
+          description: Internal Server Error
+
+  #-----------------------Get Venue by venue ID-----------------
+
+  /api/venue/{id}:
+    get:
+      tags:
+        - Venue
+      summary: Get a venue by ID
+      description: Get venue details with venue ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      security:
+        - jwt_auth: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              example:
+                success: true
+                venue_data:
+                  id: 1
+                  name: Venue Name
+                  address: Venue address
+                  city: Venue City
+                  state: Venue State
+                  avg_venuerate: 2.5
+        "403":
+          description: Unauthorized access
+        "404":
+          description: Venue not found
+        "500":
+          description: Internal Server Error
+
+  #--------------------Create show using venue ID-------------------------
+
+  /api/shows/{id}:
+    post:
+      tags:
+        - Show
+      summary: Create a new show for a venue
+      description: Create a new show for a venue by venue ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: Show 1 Name
+                    start_date:
+                      type: string
+                      format: date
+                      example: "2023-08-10"
+                    out_date:
+                      type: string
+                      format: date
+                      example: "2023-09-10"
+                    duration:
+                      type: string
+                      example: "01:20"
+                    capacity:
+                      type: integer
+                      example: 200
+                    tags:
+                      type: string
+                      example: Action
+                    price:
+                      type: integer
+                      example: 200
+                    caption:
+                      type: string
+                      example: It is an action show.
+                image:
+                  type: string
+                  format: binary
+      security:
+        - jwt_auth: []
+        - admin_auth: []
+      responses:
+        "200":
+          description: Show created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Show created successfully
+
+        "401":
+          description: Missing Authorization Header
+        "422":
+          description: Signature verification failed
+
+        "403":
+          description: Unauthorized access.
+        "500":
+          description: Internal Server Error
+
+#---------------Get all shows list for a venue using venue ID-----------
+
+    get:
+      tags:
+        - Show
+      summary: Get shows for a venue
+      description: Get a list of shows for a venue by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      security:
+        - jwt_auth: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shows:
+                    type: boolean
+                    example: true
+                  shows_data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: Show Name
+                        tag:
+                          type: string
+                          example: Action
+                        start_date:
+                          type: string
+                          format: date
+                          example: "2023-08-10"
+                        out_date:
+                          type: string
+                          format: date
+                          example: "2023-08-24"
+                        duration:
+                          type: string
+                          example: "02:00"
+                        caption:
+                          type: string
+                          example: Caption for show
+                        price:
+                          type: integer
+                          example: 120
+                        capacity:
+                          type: integer
+                          example: 120
+                        venue_id:
+                          type: integer
+                          example: 7
+                        show_image_url:
+                          type: string
+                          example: http://localhost:5000/static/shows_image/default_show_image.JPG
+        "404":
+          description: Show not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Show not found.
+                  shows:
+                    type: boolean
+                    example: false
+        "401":
+          description: Missing Authorization Header
+
+        "422":
+          description: Signature verification failed
+        "500":
+          description: Internal Server Error
+
+    #----------------Update show using show ID------------------------
+
+    put:
+      tags:
+        - Show
+      summary: Update a show
+      description: Update a show with new data and show ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: Updated Show Name
+                    duration:
+                      type: string
+                      example: "02:30"
+                    capacity:
+                      type: integer
+                      example: 150
+                    tag:
+                      type: string
+                      example: Horror
+                    price:
+                      type: integer
+                      example: 150
+                    caption:
+                      type: string
+                      example: It is horror show.
+      security:
+        - jwt_auth: []
+        - admin_auth: []
+      responses:
+        "200":
+          description: Show edited successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Show edited successfully
+        "404":
+          description: Show not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Show not found.
+        "403":
+          description: Unauthorized access.
+
+        "500":
+          description: Internal Server Error
+
+    #--------------------Delete a show using show ID--------------------
+
+    delete:
+      tags:
+        - Show
+      summary: Delete a show
+      description: Delete a show by show ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      security:
+        - jwt_auth: []
+        - admin_auth: []
+      responses:
+        "200":
+          description: Show deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Show deleted successfully
+        "401":
+          description: Missing Authorization Header
+        "422":
+          description: Signature verification failed
+
+        "404":
+          description: Show not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Show not found
+        "403":
+          description: Unauthorized access.
+        "500":
+          description: Internal Server Error
+
+  #-------------------------Export CSV using venue ID------------------
+
+  /api/exportcsv/{id}:
+    get:
+      tags:
+        - Files
+      summary: Export CSV data.
+      description: Export CSV data with venue ID using celery task.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      security:
+        - jwt_auth: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/csv:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: CSV not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: CSV not found.
+
+        "401":
+          description: Missing Authorization Header
+        "422":
+          description: Signature verification failed
+        "500":
+          description: Internal Server Error
+
+  #--------------------Book Ticket using booking table ID----------
+
+  /api/purchase/{id}:
+    post:
+      tags:
+        - Booking
+      summary: Purchase ticket
+      description: Purchase ticket using booking table ID and seats.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      security:
+        - jwt_auth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seat:
+                  type: integer
+                  example: 2
+      responses:
+        "200":
+          description: Ticket purchase successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 3
+        "404":
+          description: Booking data not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Booking data not found.
+        "401":
+          description: Missing Authorization Header
+        "422":
+          description: Signature verification failed
+        "500":
+          description: Internal Server Error
+
+  #------------------Get booking details---------------------------
+
+  /api/mybooking:
+    get:
+      tags:
+        - Booking
+      summary: Get user's booked tickets
+      description: Get user booket ticket details.
+      security:
+        - jwt_auth: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  booked_details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        first_name:
+                          type: string
+                          example: Rajveer
+                        last_name:
+                          type: string
+                          example: Singh
+                        email:
+                          type: string
+                          example: rajveer@test.com
+                        venue_city:
+                          type: string
+                          example: Booked Venue City
+                        venue_address:
+                          type: string
+                          example: Booked Venue Address
+                        venue_name:
+                          type: string
+                          example: Booked Venue Name
+                        show_name:
+                          type: string
+                          example: Booked Show Name
+                        venue_id:
+                          type: integer
+                          example: 2
+                        show_id:
+                          type: integer
+                          example: 5
+                        tag:
+                          type: string
+                          example: Horror
+                        show_date:
+                          type: string
+                          format: date-time
+                          example: "2023-08-15"
+                        booked_date:
+                          type: string
+                          format: date-time
+                          example: "2023-08-10 00:00:00.000000"
+                        price:
+                          type: integer
+                          example: 150
+                        seats:
+                          type: integer
+                          example: 2
+        "404":
+          description: No bookings found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No Bookings made yet.
+        "401":
+          description: Missing Authorization Header
+        "422":
+          description: Signature verification failed
+
+  #---------------------Get PDF for a booked Ticket------------------
+
+  /api/mybooking/{id}:
+    post:
+      tags:
+        - PDF
+      summary: Generate PDF for booked ticket
+      description: Generate a PDF ticket for the specified booking ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ticket not found
+        "500":
+          description: Internal Server Error
+  #---------------------------Search venue---------------------------
+
+  /api/searchvenue:
+    post:
+      tags:
+        - Search
+      summary: Search venues by name
+      description: Search venues by partial name input.
+      security:
+        - jwt_auth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                venue_name:
+                  type: string
+                  example: Venue Name
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  venues_data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: Venue Name
+                        address:
+                          type: string
+                          example: Venue Address
+                        city:
+                          type: string
+                          example: Venue City
+                        state:
+                          type: string
+                          example: Venue State
+                        avg_venuerate:
+                          type: number
+                          example: 4.5
+        "404":
+          description: No matching venues found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+        "401":
+          description: Missing Authorization Header
+
+        "422":
+          description: Signature verification failed
+
+  #---------------Search show by tag or show input-----------------
+
+  /api/searchshow:
+    post:
+      tags:
+        - Search
+      summary: Search shows by tag or name
+      description: Search shows by tag or partial name input.
+      security:
+        - jwt_auth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tag:
+                  type: string
+                  example: Action
+                show_name:
+                  type: string
+                  example: Show Name
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  shows_data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: Show Name
+                        tag:
+                          type: string
+                          example: Action
+                        start_date:
+                          type: string
+                          format: date
+                          example: "2023-08-10"
+                        out_date:
+                          type: string
+                          format: date
+                          example: "2023-08-24"
+                        duration:
+                          type: string
+                          example: "02:00"
+                        caption:
+                          type: string
+                          example: It is an action movie.
+                        price:
+                          type: integer
+                          example: 120
+                        capacity:
+                          type: integer
+                          example: 200
+                        avg_showrate:
+                          type: number
+                          example: 4.5
+        "404":
+          description: No matching shows found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No matching show found.
+                  success:
+                    type: boolean
+                    example: false
+        "401":
+          description: Missing Authorization Header
+        "422":
+          description: Signature verification failed
+
+components:
+  securitySchemes:
+    jwt_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    admin_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
